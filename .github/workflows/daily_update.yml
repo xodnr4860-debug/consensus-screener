@@ -42,3 +42,5 @@ jobs:
           git add data/screener.db
           git commit -m "chore: 컨센서스 자동 갱신 $(date +%Y-%m-%d)" || echo "변경 없음 — 스킵"
           git push
+
+# (재인식용 갱신)
