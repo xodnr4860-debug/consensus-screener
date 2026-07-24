@@ -1,0 +1,12 @@
+# API 키가 든 파일 — 절대 저장소에 올리지 말 것 (GitHub Secrets로 관리)
+.env
+
+__pycache__/
+*.pyc
+data/raw/
+logs_*.txt
+_probe.txt
+
+# 주의: data/screener.db 는 '일부러' 커밋한다.
+# Streamlit Community Cloud가 저장소의 이 파일을 읽어 화면에 보여주고,
+# 매일 GitHub Actions가 이 파일을 갱신해 다시 커밋한다.

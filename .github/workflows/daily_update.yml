@@ -1,0 +1,44 @@
+name: 매일 컨센서스 갱신
+
+# 평일 밤 22:00 (한국시간) 자동 실행 + 수동 실행 버튼.
+# UTC 13:00 = KST 22:00. 주말은 제외(월~금).
+on:
+  schedule:
+    - cron: "0 13 * * 1-5"
+  workflow_dispatch: {}          # Actions 탭에서 "Run workflow"로 수동 실행 가능
+
+# 갱신한 DB를 저장소에 다시 커밋하려면 쓰기 권한이 필요하다.
+permissions:
+  contents: write
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    env:
+      TZ: Asia/Seoul             # date.today()가 한국 날짜가 되도록
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: 라이브러리 설치
+        run: pip install -r requirements.txt
+
+      - name: API 키 준비 (.env)
+        # 키는 저장소가 아니라 GitHub Secrets 에 넣어둔다(FNSPACE_API_KEY).
+        run: |
+          echo "FNSPACE_API_KEY=${{ secrets.FNSPACE_API_KEY }}" > .env
+          echo "FNSPACE_MONTHLY_COINS=50000" >> .env
+
+      - name: 컨센서스 갱신
+        run: python scripts/daily_update.py
+
+      - name: 갱신된 DB 커밋
+        run: |
+          git config user.name "screener-bot"
+          git config user.email "bot@users.noreply.github.com"
+          git add data/screener.db
+          git commit -m "chore: 컨센서스 자동 갱신 $(date +%Y-%m-%d)" || echo "변경 없음 — 스킵"
+          git push
